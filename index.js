@@ -1,58 +1,91 @@
-'use strict'
+'use strict';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let startDrawing = false;
 let currentColor = '#000';
 let currentLineWidth = 1;
+let lastX = 0;
+let lastY = 0;
 
 selectColor();
-selectLineWidth()
+selectLineWidth();
 
 canvas.addEventListener('mousedown', (event) => {
     const x = event.offsetX;
     const y = event.offsetY;
     startDrawing = true;
-    ctx.moveTo(x, y);
-})
+    lastX = x; // Сохраняем начальные координаты
+    lastY = y;
+});
 
-canvas.addEventListener('mouseup', (event) => {
+canvas.addEventListener('mouseup', () => {
     startDrawing = false;
-    ctx.closePath();
-})
+});
+
+canvas.addEventListener('mouseout', () => {
+    startDrawing = false;
+});
 
 canvas.addEventListener('mousemove', (event) => {
     const x = event.offsetX;
     const y = event.offsetY;
-    drawLine(x, y, currentLineWidth, currentColor, currentLineWidth);
-})
+    if (startDrawing) {
+        drawLine(x, y, currentLineWidth, currentColor);
+        lastX = x; // Обновляем предыдущие координаты
+        lastY = y;
+    }
+});
 
 function selectColor() {
     const inputColorValue = document.querySelector('#input-color');
     inputColorValue.addEventListener('change', () => {
-        currentColor = inputValue.value;
-    })
+        currentColor = inputColorValue.value;
+    });
     return currentColor;
 }
 
 function selectLineWidth() {
     const inputLineWidthValue = document.querySelector('#line-width');
     inputLineWidthValue.addEventListener('change', () => {
-        currentLineWidth = inputLineWidthValue.value;
-    })
+        currentLineWidth = parseInt(inputLineWidthValue.value, 10);
+    });
     return currentLineWidth;
 }
 
-function drawLine(x, y, r, color, lineWidth) {
-    if (startDrawing) {
-        ctx.beginPath();
-        ctx.arc(x - r / 2, y - r / 2, r, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = color;
-        ctx.stroke();
-    }
+function drawLine(x, y, lineWidth, color) {
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY); // Начинаем линию с предыдущей точки
+    ctx.lineTo(x, y); // Рисуем линию до текущей точки
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round'; // Закруглённые концы линий
+    ctx.lineJoin = 'round'; // Закруглённые соединения линий
+    ctx.stroke();
 }
 
+canvas.addEventListener('touchstart', (event) => {
+    const touch = event.touches[0];
+    const x = touch.clientX - canvas.offsetLeft;
+    const y = touch.clientY - canvas.offsetTop;
+    startDrawing = true;
+    lastX = x;
+    lastY = y;
+    event.preventDefault(); // Предотвращаем прокрутку страницы
+});
 
+canvas.addEventListener('touchmove', (event) => {
+    if (startDrawing) {
+        const touch = event.touches[0];
+        const x = touch.clientX - canvas.offsetLeft;
+        const y = touch.clientY - canvas.offsetTop;
+        drawLine(x, y, currentLineWidth, currentColor);
+        lastX = x;
+        lastY = y;
+        event.preventDefault(); // Предотвращаем прокрутку страницы
+    }
+});
+
+canvas.addEventListener('touchend', () => {
+    startDrawing = false;
+});
