@@ -11,6 +11,9 @@ let lastY = 0;
 selectColor();
 selectLineWidth();
 
+const drawCircleBtn = document.querySelector('#circle');
+const paintBtn = document.querySelector('#paint');
+
 canvas.addEventListener('mousedown', (event) => {
     const x = event.offsetX;
     const y = event.offsetY;
@@ -35,6 +38,32 @@ canvas.addEventListener('mousemove', (event) => {
         lastX = x; // Обновляем предыдущие координаты
         lastY = y;
     }
+});
+
+canvas.addEventListener('touchstart', (event) => {
+    const touch = event.touches[0];
+    const x = touch.clientX - canvas.offsetLeft;
+    const y = touch.clientY - canvas.offsetTop;
+    startDrawing = true;
+    lastX = x;
+    lastY = y;
+    event.preventDefault(); // Предотвращаем прокрутку страницы
+});
+
+canvas.addEventListener('touchmove', (event) => {
+    if (startDrawing) {
+        const touch = event.touches[0];
+        const x = touch.clientX - canvas.offsetLeft;
+        const y = touch.clientY - canvas.offsetTop;
+        drawLine(x, y, currentLineWidth, currentColor);
+        lastX = x;
+        lastY = y;
+        event.preventDefault(); // Предотвращаем прокрутку страницы
+    }
+});
+
+canvas.addEventListener('touchend', () => {
+    startDrawing = false;
 });
 
 function selectColor() {
@@ -64,28 +93,11 @@ function drawLine(x, y, lineWidth, color) {
     ctx.stroke();
 }
 
-canvas.addEventListener('touchstart', (event) => {
-    const touch = event.touches[0];
-    const x = touch.clientX - canvas.offsetLeft;
-    const y = touch.clientY - canvas.offsetTop;
-    startDrawing = true;
-    lastX = x;
-    lastY = y;
-    event.preventDefault(); // Предотвращаем прокрутку страницы
-});
-
-canvas.addEventListener('touchmove', (event) => {
-    if (startDrawing) {
-        const touch = event.touches[0];
-        const x = touch.clientX - canvas.offsetLeft;
-        const y = touch.clientY - canvas.offsetTop;
-        drawLine(x, y, currentLineWidth, currentColor);
-        lastX = x;
-        lastY = y;
-        event.preventDefault(); // Предотвращаем прокрутку страницы
-    }
-});
-
-canvas.addEventListener('touchend', () => {
-    startDrawing = false;
-});
+function drawCircle(x, y, r) {
+    ctx.moveTo(x, y);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 2 * Math.PI);
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = currentLineWidth;
+    ctx.stroke();
+}
